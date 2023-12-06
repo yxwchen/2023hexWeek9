@@ -13,6 +13,8 @@ const api_path = "claire";
 // 需要的資料集宣告
 let productData;
 let cartData;
+const productList = document.querySelector(".productWrap");
+
 
 // 取得產品資料列表
 function getProductList() {
@@ -32,14 +34,13 @@ function getProductList() {
 }
 // 渲染產品資料
 function renderProductList() {
-    const productList = document.querySelector(".productWrap");
     let str = '';
     productData.forEach(function (item) {
         str += `<li class="productCard">
 <h4 class="productType">新品</h4>
 <img src="${item.images}"
     alt="">
-<a href="#" class="addCardBtn">加入購物車</a>
+<a href="#" class="addCardBtn" data-id="${item.id}" class="js-addCart">加入購物車</a>
 <h3>${item.title}</h3>
 <del class="originPrice">NT$${item.origin_price}</del>
 <p class="nowPrice">NT$${item.price}</p>
@@ -94,26 +95,40 @@ function renderCartList() {
 
     shoppingCartItem.innerHTML = str;
 }
-// TODO 新增購物車品項 
-function addCartItem() {
-    let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`;
-    axios
-        .post(url, {
-            data: {
-                "productId": "g0tlPzEH72mGh6aVdYUa",
-                "quantity": 5
-            }
-        })
-        .then(function (response) {
-            console.log(response.data); //測試有回應api裡面的資料集
-        })
-        .catch(function (error) {
-            // handle error
-            console.log(error);
-        });
-}
+//  新增購物車監聽事件
+productList.addEventListener('click', function (e) {
+    // console.log(e.target.getAttribute('class'));
+    const addCartList = e.target.getAttribute('class');
+    if (addCartList !== 'js-addCart') {
+        return
+    } else {
+        //取id
+
+        const productId = e.target.getAttribute("data-id");
+        console.log(productId);
+
+    }
+})
+// 新增購物車 
+// function addCartItem(id) {
+//     let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`;
+//     axios
+//         .post(url, {
+//             data: {
+//                 "productId": id,
+//                 "quantity": 1
+//             }
+//         })
+//         .then(function (response) {
+//             console.log(response.data); //測試有回應api裡面的資料集
+//             getCartList();
+//         })
+//         .catch(function (error) {
+//             // handle error
+//             console.log(error);
+//         });
+// }
 
 
 getProductList();
 getCartList();
-addCartItem();
