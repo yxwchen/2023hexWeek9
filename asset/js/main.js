@@ -15,7 +15,7 @@ let productData;
 let cartData;
 const productList = document.querySelector(".productWrap");
 const shoppingCartItem = document.querySelector('.shoppingCart-Item');
-
+let cartTotalPrice ;
 // 取得產品資料列表
 function getProductList() {
     let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/products`;
@@ -33,9 +33,21 @@ function getProductList() {
         });
 }
 // 渲染產品資料
-function renderProductList() {
+function renderProductList(product) {
     let str = '';
-    productData.forEach(function (item) {
+    let filteredData = [];
+    const filterData = productData.filter(function(item){
+        if(product === item.category){
+            filteredData.push(item);
+            return true ;
+        }
+        //全部品項
+        if(product === '全部'){
+            filteredData.push(item);
+            return true ;
+        }
+    })
+    filterData.forEach(function (item) {
         str += `<li class="productCard">
 <h4 class="productType">新品</h4>
 <img src="${item.images}"
@@ -46,8 +58,9 @@ function renderProductList() {
 <p class="nowPrice">NT$${item.price}</p>
 </li>`;
         //console.log(str); 測試有取到item的資料寫入到str
-        productList.innerHTML = str;
+       
     })
+    productList.innerHTML = str;
 }
 // 取得購物車列表
 function getCartList() {
@@ -57,7 +70,9 @@ function getCartList() {
         .then(function (response) {
             // console.log(response.data.carts); 測試有回應api裡面的資料集
             cartData = response.data.carts;
-            //console.log(cartData); //確認api資料有寫入到 cartData
+            cartTotalPrice = response.data.finalTotal;
+            console.log(cartTotalPrice);
+            console.log(cartData); //確認api資料有寫入到 cartData
             renderCartList();
         })
         .catch(function (error) {
@@ -68,6 +83,7 @@ function getCartList() {
 // 渲染購物車列表
 function renderCartList() {
     let str = '';
+if(cartData.length > 0){
     cartData.forEach(function (item) {
         console.log(item);
         const itemTotalPrice = item.product.price * item.quantity;
@@ -90,6 +106,13 @@ function renderCartList() {
         </tr>
     `
     })
+}else{
+  // 如果購物車為空，將 str 設置為無資料
+  str = '購物車目前無資料';
+}
+    // 總金額計算 
+    const totalPrice = document.querySelector('.cart-totalPrice');
+    totalPrice.textContent = `NT$${cartTotalPrice}`;
 
     shoppingCartItem.innerHTML = str;
 }
@@ -150,6 +173,35 @@ function deleteCartItem(cardId) {
             console.log(error);
         });
 }
+//刪除購物車所有品項 監聽事件
+const deleteAllBtn = document.querySelector('.discardAllBtn');
+deleteAllBtn.addEventListener('click',function(e){
+    deleteAllCartItem();
+    renderCartList(); // 在這裡加上重新渲染購物車列表的操作
+})
+// 刪除購物車所有品項
+function deleteAllCartItem(){
+    axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`)
+   .then(function (response) {
+     console.log(response.data);
+     getCartList(); // 刪除完重新取得購物車列表
+   })
+       .catch(function (error) {
+       // handle error
+       console.log(error);
+     });
+ }
+
+//  篩選品項 監聽事件
+const selectItem = document.querySelector('.productSelect');
+selectItem.addEventListener('change',filter);
+
+function filter(){
+    console.log(selectItem.value);
+    renderProductList(selectItem.value);
+}
+
+ 
 
 
 getProductList();
