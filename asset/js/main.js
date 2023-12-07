@@ -67,9 +67,7 @@ function getCartList() {
 }
 // 渲染購物車列表
 function renderCartList() {
-
     let str = '';
-
     cartData.forEach(function (item) {
         console.log(item);
         const itemTotalPrice = item.product.price * item.quantity;
@@ -91,16 +89,15 @@ function renderCartList() {
         </td>
         </tr>
     `
-       console.log(`${item.id}`);
     })
 
     shoppingCartItem.innerHTML = str;
 }
-//  新增購物車監聽事件
+// 新增購物車監聽事件
 productList.addEventListener('click', function (e) {
     // console.log(e.target.getAttribute('class'));
     const addCartList = e.target.getAttribute('class');
-     if (addCartList !== 'addCardBtn') {
+    if (addCartList !== 'addCardBtn') {
         return
     } else {
         //取id
@@ -108,7 +105,7 @@ productList.addEventListener('click', function (e) {
         addCartItem(productId);
     }
 })
-//新增購物車 
+// 新增購物車 
 function addCartItem(id) {
     let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`;
     axios
@@ -128,22 +125,32 @@ function addCartItem(id) {
         });
 }
 // 刪除單筆監聽事件
-shoppingCartItem.addEventListener('click',function(e){
-    console.log(e.target.getAttribute('class'));
+shoppingCartItem.addEventListener('click', function (e) {
+    // console.log(e.target.getAttribute('class'));
+    const deleteCartList = e.target.getAttribute('class');
+    if (deleteCartList !== 'material-icons') {
+        return
+    } else {
+        const productId = e.target.getAttribute("data-id");
+        console.log(productId);
+        deleteCartItem(productId);
+    }
 })
 // 刪除單筆
-function deleteCartItem(cardId){
+function deleteCartItem(cardId) {
     let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts/${cardId}`;
     axios.delete(url)
-    .then(function (response) {
-      console.log(response.data);
-    })
+        .then(function (response) {
+            console.log(response.data);
+            getCartList(); //刪除完重新取得購物車列表
+            renderCartList(); //刪除完重新渲染購物車列表
+        })
         .catch(function (error) {
-        // handle error
-        console.log(error);
-      });
-  }
-  
+            // handle error
+            console.log(error);
+        });
+}
+
 
 getProductList();
 getCartList();
