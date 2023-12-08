@@ -15,7 +15,7 @@ let productData;
 let cartData;
 const productList = document.querySelector(".productWrap");
 const shoppingCartItem = document.querySelector('.shoppingCart-Item');
-let cartTotalPrice ;
+let cartTotalPrice;
 // 取得產品資料列表
 function getProductList() {
     let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/products`;
@@ -32,36 +32,67 @@ function getProductList() {
             console.log(error);
         });
 }
-// 渲染產品資料
+// 渲染產品資料(chatgpt幫忙除錯 要再看過全部渲染的邏輯問題在哪)
 function renderProductList(product) {
     let str = '';
-    let filteredData = [];
-    const filterData = productData.filter(function(item){
-        if(product === item.category){
-            filteredData.push(item);
-            return true ;
-        }
-        //全部品項
-        if(product === '全部'){
-            filteredData.push(item);
-            return true ;
-        }
-    })
-    filterData.forEach(function (item) {
+
+    // 如果 product 未定義或為空，將 filteredData 設為整個 productData
+    const filteredData = (product && product.trim() !== '') ?
+        productData.filter(item => product === item.category || product === '全部') :
+        productData;
+
+    console.log(productData);
+    console.log(filteredData);
+
+    filteredData.forEach(function (item) {
         str += `<li class="productCard">
 <h4 class="productType">新品</h4>
-<img src="${item.images}"
-    alt="">
+<img src="${item.images}" alt="">
 <a href="#" class="addCardBtn" data-id="${item.id}">加入購物車</a>
 <h3>${item.title}</h3>
 <del class="originPrice">NT$${item.origin_price}</del>
 <p class="nowPrice">NT$${item.price}</p>
 </li>`;
-        //console.log(str); 測試有取到item的資料寫入到str
-       
-    })
+    });
+
+    console.log(str);
     productList.innerHTML = str;
 }
+// Ｑ原本自己寫的渲染頁面 但初始化載入都沒有產品列表。
+// function renderProductList(product) {
+//     let str = '';
+//     let filteredData = [];
+//     const filterData = productData.filter(function (item) {
+//         if (product === item.category) {
+//             filteredData.push(item);
+//             return true;
+//         }
+//         //全部品項
+//         if (product === '全部') {
+//             filteredData.push(item);
+//             return true;
+
+//         }
+//     })
+
+
+//     console.log(productData);
+//     console.log(filteredData);
+//     console.log(filterData);
+//     filterData.forEach(function (item) {
+//         str += `<li class="productCard">
+// <h4 class="productType">新品</h4>
+// <img src="${item.images}"
+//     alt="">
+// <a href="#" class="addCardBtn" data-id="${item.id}">加入購物車</a>
+// <h3>${item.title}</h3>
+// <del class="originPrice">NT$${item.origin_price}</del>
+// <p class="nowPrice">NT$${item.price}</p>
+// </li>`;
+//     })
+//     console.log(str);
+//     productList.innerHTML = str;
+// }
 // 取得購物車列表
 function getCartList() {
     let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`;
@@ -83,11 +114,13 @@ function getCartList() {
 // 渲染購物車列表
 function renderCartList() {
     let str = '';
-if(cartData.length > 0){
-    cartData.forEach(function (item) {
-        console.log(item);
-        const itemTotalPrice = item.product.price * item.quantity;
-        str += `
+    const totalPrice = document.querySelector('.cart-totalPrice');
+
+    if (cartData.length > 0) {
+        cartData.forEach(function (item) {
+            console.log(item);
+            const itemTotalPrice = item.product.price * item.quantity;
+            str += `
         <tr>
         <td>
             <div class="cardItem-title">
@@ -105,17 +138,19 @@ if(cartData.length > 0){
         </td>
         </tr>
     `
-    })
-}else{
-  // 如果購物車為空，將 str 設置為無資料
-  str = '購物車目前無資料';
-}
-    // 總金額計算 
-    const totalPrice = document.querySelector('.cart-totalPrice');
-    totalPrice.textContent = `NT$${cartTotalPrice}`;
+        })
+        // 總金額計算 
+        totalPrice.textContent = `NT$${cartTotalPrice}`;
+    } else {
+        // 如果購物車為空，將 str 設置為無資料
+        str = '購物車目前無資料';
+        totalPrice.textContent = 'NT$0';
+    }
+
 
     shoppingCartItem.innerHTML = str;
 }
+
 // 新增購物車監聽事件
 productList.addEventListener('click', function (e) {
     // console.log(e.target.getAttribute('class'));
@@ -175,33 +210,33 @@ function deleteCartItem(cardId) {
 }
 //刪除購物車所有品項 監聽事件
 const deleteAllBtn = document.querySelector('.discardAllBtn');
-deleteAllBtn.addEventListener('click',function(e){
+deleteAllBtn.addEventListener('click', function (e) {
     deleteAllCartItem();
     renderCartList(); // 在這裡加上重新渲染購物車列表的操作
 })
 // 刪除購物車所有品項
-function deleteAllCartItem(){
+function deleteAllCartItem() {
     axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`)
-   .then(function (response) {
-     console.log(response.data);
-     getCartList(); // 刪除完重新取得購物車列表
-   })
-       .catch(function (error) {
-       // handle error
-       console.log(error);
-     });
- }
+        .then(function (response) {
+            console.log(response.data);
+            getCartList(); // 刪除完重新取得購物車列表
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+}
 
 //  篩選品項 監聽事件
 const selectItem = document.querySelector('.productSelect');
-selectItem.addEventListener('change',filter);
+selectItem.addEventListener('change', filter);
 
-function filter(){
+function filter() {
     console.log(selectItem.value);
     renderProductList(selectItem.value);
 }
 
- 
+
 
 
 getProductList();
