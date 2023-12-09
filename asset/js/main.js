@@ -41,8 +41,8 @@ function renderProductList(product) {
         productData.filter(item => product === item.category || product === '全部') :
         productData;
 
-    console.log(productData);
-    console.log(filteredData);
+    // console.log(productData);
+    // console.log(filteredData);
 
     filteredData.forEach(function (item) {
         str += `<li class="productCard">
@@ -55,7 +55,7 @@ function renderProductList(product) {
 </li>`;
     });
 
-    console.log(str);
+    //console.log(str);
     productList.innerHTML = str;
 }
 // Ｑ原本自己寫的渲染頁面 但初始化載入都沒有產品列表。
@@ -102,8 +102,8 @@ function getCartList() {
             // console.log(response.data.carts); 測試有回應api裡面的資料集
             cartData = response.data.carts;
             cartTotalPrice = response.data.finalTotal;
-            console.log(cartTotalPrice);
-            console.log(cartData); //確認api資料有寫入到 cartData
+            // console.log(cartTotalPrice);
+            //console.log(cartData); //確認api資料有寫入到 cartData
             renderCartList();
         })
         .catch(function (error) {
@@ -118,7 +118,7 @@ function renderCartList() {
 
     if (cartData.length > 0) {
         cartData.forEach(function (item) {
-            console.log(item);
+            //console.log(item);
             const itemTotalPrice = item.product.price * item.quantity;
             str += `
         <tr>
@@ -174,7 +174,7 @@ function addCartItem(id) {
             }
         })
         .then(function (response) {
-            console.log(response.data); //測試有回應api裡面的資料集
+            //console.log(response.data); //測試有回應api裡面的資料集
             getCartList();
         })
         .catch(function (error) {
@@ -190,7 +190,7 @@ shoppingCartItem.addEventListener('click', function (e) {
         return
     } else {
         const productId = e.target.getAttribute("data-id");
-        console.log(productId);
+        //console.log(productId);
         deleteCartItem(productId);
     }
 })
@@ -218,7 +218,8 @@ deleteAllBtn.addEventListener('click', function (e) {
 function deleteAllCartItem() {
     axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`)
         .then(function (response) {
-            console.log(response.data);
+            //console.log(response.data);
+            alert('刪除全部購物車成功!');
             getCartList(); // 刪除完重新取得購物車列表
         })
         .catch(function (error) {
@@ -232,12 +233,74 @@ const selectItem = document.querySelector('.productSelect');
 selectItem.addEventListener('change', filter);
 
 function filter() {
-    console.log(selectItem.value);
+    //console.log(selectItem.value);
     renderProductList(selectItem.value);
 }
 
+// 送出購買訂單 監聽事件
+let orderData = {
+    user: {
 
+    }
+};
+const sendOrderBtn = document.querySelector('.orderInfo-btn');
+sendOrderBtn.addEventListener('click', function (e) {
+    // console.log('aaa');
+    e.preventDefault(); //取消表單的默認行為
+    // 判斷購物車資料
+    if (cartData.length == 0) {
+        alert('購物車沒有產品，請先新增一筆');
+        return
+    }
+    //判斷送出表單欄位資料
+    const customerName = document.querySelector('#customerName').value;
+    const customerPhone = document.querySelector('#customerPhone').value;
+    const customerEmail = document.querySelector('#customerEmail').value;
+    const customerAddress = document.querySelector('#customerAddress').value;
+    const customeTradeWay = document.querySelector('#tradeWay').value;
 
+    // console.log(customerName,customerPhone,customerEmail,customerAddress,customeTradeWay);
+    if (customerName == '' || customerPhone == '' || customerEmail == '' || customerAddress == '') {
+        alert('請填寫訂單資訊');
+        return
+    } else {
+        orderData.user.name = customerName;
+        orderData.user.tel = customerPhone;
+        orderData.user.email = customerEmail;
+        orderData.user.address = customerAddress;
+        orderData.user.payment = customeTradeWay;
+    }
+    // console.log(orderData);
+    //執行送出訂單api 
+    createOrder();
+
+})
+
+// "user": {
+//     "name": "六角學院",
+//     "tel": "07-5313506",
+//     "email": "hexschool@hexschool.com",
+//     "address": "高雄市六角學院路",
+//     "payment": "Apple Pay"
+//   }
+
+// 送出購買訂單
+function createOrder() {
+    let url = `https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`;
+    axios
+        .post(url, {
+            data: orderData
+        })
+        .then(function (response) {
+            alert('訂單建立成功');
+            console.log(response.data); //測試有回應api裡面的資料集
+
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+}
 
 getProductList();
 getCartList();
