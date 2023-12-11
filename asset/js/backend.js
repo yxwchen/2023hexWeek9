@@ -1,4 +1,4 @@
-// C3.js
+// C3.js 預設
 let chart = c3.generate({
     bindto: '#chart', // HTML 元素綁定
     data: {
@@ -17,3 +17,31 @@ let chart = c3.generate({
         }
     },
 });
+
+// api設定
+const api_path = "claire";
+const token = 'CJUeYiL1PhMH7vkuiK0tzsiagrD2';
+
+let orderDAta;
+
+// 取得訂單列表
+function getOrderList(){
+    let url = `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`;
+    axios.get(url,
+        {
+            headers:{
+                'Authorization':token
+            }
+        })
+        .then(function (response) {
+             console.log(response.data.orders);
+            orderData = response.data.orders;
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+
+}
+
+getOrderList();
