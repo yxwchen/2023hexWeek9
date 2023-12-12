@@ -22,7 +22,7 @@ let chart = c3.generate({
 const api_path = "claire";
 const token = 'CJUeYiL1PhMH7vkuiK0tzsiagrD2';
 
-let orderDAta;
+let orderData;
 
 // 取得訂單列表
 function getOrderList(){
@@ -36,6 +36,7 @@ function getOrderList(){
         .then(function (response) {
              console.log(response.data.orders);
             orderData = response.data.orders;
+            renderOrderList(); // 在這裡呼叫 renderOrderList
         })
         .catch(function (error) {
             // handle error
@@ -43,5 +44,37 @@ function getOrderList(){
         });
 
 }
+// 渲染訂單列表
+const orderListItem = document.querySelector('.orderListItem');
+function renderOrderList(){
+    let str = '' ;
+    orderData.forEach(function(item){
+        let productNames = item.products.map(product => product.title).join('<br>');//找產品名稱用的陣列方法 by chatGPT
+        str += `
+        <tr>
+                    <td>${item.id}</td>
+                    <td>
+                        <p>${item.user.name}</p>
+                        <p>${item.user.tel}</p>
+                    </td>
+                    <td>${item.user.address}</td>
+                    <td>${item.user.email}</td>
+                    <td>
+                        <p>${productNames}</p>
+                    </td>
+                    <td>${item.createdAt}</td>
+                    <td class="orderStatus">
+                        <a href="#">已處理</a>
+                    </td>
+                    <td>
+                        <input type="button" class="delSingleOrder-Btn" value="刪除">
+                    </td>
+                </tr>
+        `
+    })
+
+    orderListItem.innerHTML = str ;
+}
+
 
 getOrderList();
