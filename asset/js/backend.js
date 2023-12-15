@@ -25,16 +25,15 @@ const token = 'CJUeYiL1PhMH7vkuiK0tzsiagrD2';
 let orderData;
 
 // 取得訂單列表
-function getOrderList(){
+function getOrderList() {
     let url = `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`;
-    axios.get(url,
-        {
-            headers:{
-                'Authorization':token
+    axios.get(url, {
+            headers: {
+                'Authorization': token
             }
         })
         .then(function (response) {
-             console.log(response.data.orders);
+            console.log(response.data.orders);
             orderData = response.data.orders;
             renderOrderList(); // 在這裡呼叫 renderOrderList
         })
@@ -46,10 +45,11 @@ function getOrderList(){
 }
 // 渲染訂單列表
 const orderListItem = document.querySelector('.orderListItem');
-function renderOrderList(){
-    let str = '' ;
-    orderData.forEach(function(item){
-        let productNames = item.products.map(product => product.title).join('<br>');//找產品名稱用的陣列方法 by chatGPT
+
+function renderOrderList() {
+    let str = '';
+    orderData.forEach(function (item) {
+        let productNames = item.products.map(product => product.title).join('<br>'); //找產品名稱用的陣列方法 by chatGPT
         str += `
         <tr>
                     <td>${item.id}</td>
@@ -67,14 +67,65 @@ function renderOrderList(){
                         <a href="#">已處理</a>
                     </td>
                     <td>
-                        <input type="button" class="delSingleOrder-Btn" value="刪除">
+                        <input type="button" class="delSingleOrder-Btn" data-id="${item.id}" value="刪除">
                     </td>
                 </tr>
         `
     })
 
-    orderListItem.innerHTML = str ;
+    orderListItem.innerHTML = str;
 }
-
+// 刪除單筆 監聽事件
+orderListItem.addEventListener('click', function (e) {
+    const deleteOrderList = e.target.getAttribute('class');
+    // console.log(deleteOrderList);
+    if (deleteOrderList !== "delSingleOrder-Btn") {
+        return
+    } else {
+        const orderId = e.target.getAttribute("data-id");
+        // console.log(orderId);
+        deleteOrderItem(orderId);
+    }
+})
+// 刪除單筆
+function deleteOrderItem(orderId) {
+    let url = `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders/${orderId}`;
+    axios.delete(url, {
+            headers: {
+                'Authorization': token
+            }
+        })
+        .then(function (response) {
+            console.log(response.data);
+            getOrderList(); //刪除完重新取得訂單列表
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+}
+// 刪除全部 監聽事件
+const deleteAllBtn = document.querySelector('.discardAllBtn');
+deleteAllBtn.addEventListener('click', function (e) {
+    deleteOrderAllItem();
+    alert('已全部刪除所有訂單');
+})
+// 刪除全部
+function deleteOrderAllItem() {
+    let url = `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`;
+    axios.delete(url, {
+            headers: {
+                'Authorization': token
+            }
+        })
+        .then(function (response) {
+            console.log(response.data);
+            getOrderList(); //刪除完重新取得訂單列表
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+}
 
 getOrderList();
